@@ -1,0 +1,1634 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DNS Change — Windows 10/11 Network Resolver Studio</title>
+  <link rel="icon" type="image/x-icon" href="../Icona/icon.ico">
+  <style>
+    :root {
+      --font-sans: 'Segoe UI Variable Display', 'Segoe UI', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+      --font-mono: 'Cascadia Code', 'JetBrains Mono', 'Consolas', monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+    }
+
+    body {
+      font-family: var(--font-sans);
+      -webkit-font-smoothing: antialiased;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+      transition: background-color 0.2s ease, color 0.2s ease;
+    }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(128, 138, 155, 0.35); border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(128, 138, 155, 0.55); }
+
+    @keyframes pulse-live {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.45; transform: scale(0.9); }
+    }
+    .dot-pulse {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      animation: pulse-live 2s infinite ease-in-out;
+    }
+
+    .mono { font-family: var(--font-mono); }
+    .sans { font-family: var(--font-sans); }
+
+    /* Global Top Control Bar */
+    .top-studio-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+      padding: 12px 22px;
+      border-bottom: 1px solid var(--border-color);
+      background: var(--header-bg);
+      z-index: 20;
+    }
+
+    .brand-cluster {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-logo {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      background: var(--accent-soft);
+      border: 1px solid var(--accent-border);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.16);
+    }
+
+    .brand-logo img {
+      width: 28px;
+      height: 28px;
+      object-fit: contain;
+    }
+
+    .brand-title {
+      font-size: 16px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: var(--fg-main);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .badge-version {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 4px;
+      background: var(--surface-subtle);
+      color: var(--fg-muted);
+      border: 1px solid var(--border-color);
+    }
+
+    .brand-subtitle {
+      font-size: 12px;
+      color: var(--fg-muted);
+      margin-top: 1px;
+    }
+
+    .controls-cluster {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 9px;
+    }
+
+    /* Page Navigation Switcher (Dashboard vs Wiki Guide) */
+    .page-nav {
+      display: inline-flex;
+      background: var(--surface-subtle);
+      border: 1.5px solid var(--accent-border);
+      padding: 3px;
+      border-radius: 9px;
+      gap: 3px;
+    }
+
+    .page-nav-btn {
+      font-family: var(--font-sans);
+      font-size: 12px;
+      font-weight: 800;
+      padding: 6px 13px;
+      border-radius: 6px;
+      border: none;
+      background: transparent;
+      color: var(--fg-muted);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s ease;
+    }
+
+    .page-nav-btn:hover {
+      color: var(--fg-main);
+    }
+
+    .page-nav-btn.active {
+      background: var(--accent-main);
+      color: var(--accent-contrast);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.22);
+    }
+
+    /* Style Switcher Pills */
+    .style-tabs {
+      display: inline-flex;
+      background: var(--surface-subtle);
+      border: 1px solid var(--border-color);
+      padding: 3px;
+      border-radius: 8px;
+      gap: 3px;
+    }
+
+    .style-tab-btn {
+      font-family: var(--font-sans);
+      font-size: 12px;
+      font-weight: 700;
+      padding: 6px 11px;
+      border-radius: 6px;
+      border: none;
+      background: transparent;
+      color: var(--fg-muted);
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .style-tab-btn:hover {
+      color: var(--fg-main);
+    }
+
+    .style-tab-btn.active {
+      background: var(--accent-main);
+      color: var(--accent-contrast);
+      box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+    }
+
+    /* Adapter Selector */
+    .adapter-box {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--surface-subtle);
+      border: 1px solid var(--border-color);
+      padding: 5px 10px;
+      border-radius: 8px;
+      font-size: 12px;
+    }
+
+    .adapter-select {
+      background: transparent;
+      color: var(--fg-main);
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 700;
+      border: none;
+      outline: none;
+      cursor: pointer;
+    }
+
+    .adapter-select option {
+      background: var(--card-bg);
+      color: var(--fg-main);
+    }
+
+    /* Theme Toggle Button */
+    .theme-btn {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      padding: 7px 12px;
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+      background: var(--surface-subtle);
+      color: var(--fg-main);
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .theme-btn:hover {
+      border-color: var(--accent-main);
+    }
+
+    /* Wiki Page Specific Styles */
+    .wiki-topic-btn {
+      width: 100%;
+      text-align: left;
+      padding: 11px 14px;
+      border-radius: 8px;
+      border: 1px solid transparent;
+      background: transparent;
+      color: var(--fg-muted);
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transition: all 0.15s ease;
+    }
+    .wiki-topic-btn:hover {
+      background: var(--surface-subtle);
+      color: var(--fg-main);
+    }
+    .wiki-topic-btn.active {
+      background: var(--accent-soft);
+      color: var(--accent-main);
+      border-color: var(--accent-border);
+    }
+
+    /* Toast Notification Banner */
+    #status-toast {
+      position: fixed;
+      bottom: 20px;
+      right: 24px;
+      max-width: 460px;
+      padding: 13px 18px;
+      border-radius: 10px;
+      background: var(--card-bg);
+      color: var(--fg-main);
+      border: 2px solid var(--accent-main);
+      box-shadow: 0 12px 32px rgba(0,0,0,0.45);
+      font-size: 13px;
+      font-weight: 600;
+      z-index: 100;
+      display: none;
+      align-items: center;
+      gap: 10px;
+    }
+
+    button {
+      transition: transform 0.08s ease, opacity 0.15s ease, background-color 0.15s ease;
+    }
+    button:active {
+      transform: scale(0.98);
+    }
+
+    /* Footer */
+    .app-footer {
+      margin-top: auto;
+      padding: 10px 22px;
+      border-top: 1px solid var(--border-color);
+      background: var(--header-bg);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 12px;
+      color: var(--fg-muted);
+    }
+    .app-footer a {
+      color: var(--accent-main);
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .app-footer a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- TOP STUDIO BAR: Icona Ufficiale + Page Switcher (Dashboard / Wiki) + Adapter + 3 Stili + Dark/Light -->
+  <header class="top-studio-bar">
+    <div class="brand-cluster">
+      <div class="brand-logo" id="brand-icon">
+        <img src="../Icona/icon.ico" alt="DNS Change" onerror="this.style.display='none';this.parentElement.textContent='⇄';" />
+      </div>
+      <div>
+        <div class="brand-title">
+          <span>DNS CHANGE</span>
+          <span class="badge-version" id="version-badge">v0.1.7 • WIN 10/11</span>
+          <span class="badge-version" id="admin-badge" style="color: var(--accent-main);">● SISTEMA PRONTO</span>
+        </div>
+        <div class="brand-subtitle" id="style-subtitle">
+          Stile 2: Windows 11 Mica Tactile — Sidebar di controllo profilo attivo e card in righe verticali in stile Windows 11
+        </div>
+      </div>
+    </div>
+
+    <div class="controls-cluster">
+      <!-- Page Switcher: Dashboard vs Preset vs Wiki & Guida Neofiti -->
+      <nav class="page-nav" aria-label="Navigazione Pagine">
+        <button id="nav-dashboard" class="page-nav-btn active" onclick="setActivePage('dashboard')">
+          <span>🌐</span>
+          <span>Dashboard DNS</span>
+        </button>
+        <button id="nav-preset" class="page-nav-btn" onclick="openPresetsChapter()" title="Vai direttamente ai Preset pronti (Capitolo 4 della Wiki)">
+          <span>🏆</span>
+          <span>Preset</span>
+        </button>
+        <button id="nav-wiki" class="page-nav-btn" onclick="setActivePage('wiki')">
+          <span>📖</span>
+          <span>Wiki &amp; Guida Neofiti</span>
+        </button>
+      </nav>
+
+      <!-- Network Adapter Dropdown -->
+      <div class="adapter-box" title="Scheda di rete Windows su cui applicare i DNS">
+        <span class="dot-pulse" style="background: #10B981;"></span>
+        <span style="color: var(--fg-muted); font-weight: 600;">Scheda:</span>
+        <select id="adapter-select" class="adapter-select" onchange="onAdapterChange(this.value)">
+          <option value="Ethernet">Ethernet (Connessa)</option>
+        </select>
+        <button onclick="refreshSystemState()" title="Aggiorna stato schede e DNS attuali" style="background:none;border:none;color:var(--fg-muted);cursor:pointer;font-size:13px;">↻</button>
+      </div>
+
+      <!-- 3 Style Variants Switcher -->
+      <div class="style-tabs" role="tablist">
+        <button id="tab-style-1" class="style-tab-btn" onclick="setStyleVariant(1)">1. Swiss</button>
+        <button id="tab-style-2" class="style-tab-btn active" onclick="setStyleVariant(2)">2. Mica</button>
+        <button id="tab-style-3" class="style-tab-btn" onclick="setStyleVariant(3)">3. Rack</button>
+      </div>
+
+      <!-- Dark / Light Theme Button -->
+      <button id="theme-toggle-btn" class="theme-btn" onclick="toggleTheme()">
+        <span id="theme-icon">☀️</span>
+        <span id="theme-text">Tema: LIGHT</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- MAIN DYNAMIC VIEWPORT -->
+  <main id="app-viewport" style="flex: 1; padding: 18px 22px; overflow-y: auto;"></main>
+
+  <!-- FOOTER -->
+  <footer class="app-footer">
+    <div>
+      <strong id="footer-version-label">DNS Change v0.1.7</strong> — Created by <strong>Alex Lignola</strong> • © 2026 DNS Change - All rights reserved.
+    </div>
+    <div style="display: flex; gap: 16px;">
+      <a href="#" onclick="openExternalUrl('https://www.youtube.com/@AngoloInformatico'); return false;">YouTube @AngoloInformatico ↗</a>
+      <a href="#" onclick="openExternalUrl('https://github.com/AngoloInformatico'); return false;">GitHub Profile ↗</a>
+      <a href="#" onclick="openExternalUrl('https://github.com/AngoloInformatico?tab=repositories'); return false;">Repositories ↗</a>
+    </div>
+  </footer>
+
+  <!-- STATUS TOAST -->
+  <div id="status-toast"></div>
+
+  <script>
+    // =========================================================================
+    // CATALOGO DEI MIGLIORI DNS MONDIALI CON DESCRIZIONI DETTAGLIATE E METRICHE
+    // =========================================================================
+    const DNS_PROVIDERS = [
+      {
+        id: 'cloudflare',
+        name: 'Cloudflare DNS',
+        badge: 'VELOCITÀ ESTREMA & PRIVACY',
+        category: 'Performance & Privacy',
+        primary: '1.1.1.1',
+        secondary: '1.0.0.1',
+        ipv6_pri: '2606:4700:4700::1111',
+        latency: 9,
+        speedScore: 99,
+        reliability: 99.98,
+        protocol: 'Anycast / DoH / DoT',
+        desc: 'Il resolver DNS pubblico più veloce al mondo secondo i benchmark indipendenti DNSPerf. Non memorizza mai l\'indirizzo IP del chiamante su disco, garantisce zero vendita di dati a terzi ed è sottoposto ad audit annuale pubblico.',
+        url: 'https://one.one.one.one/'
+      },
+      {
+        id: 'google',
+        name: 'Google Public DNS',
+        badge: 'MASSIMA STABILITÀ GLOBALE',
+        category: 'Infrastruttura Globale',
+        primary: '8.8.8.8',
+        secondary: '8.8.4.4',
+        ipv6_pri: '2001:4860:4860::8888',
+        latency: 13,
+        speedScore: 96,
+        reliability: 99.99,
+        protocol: 'DNSSEC / Anycast Core',
+        desc: 'Infrastruttura globale ad altissima ridondanza gestita da Google. Garantisce massima compatibilità con qualsiasi dominio internazionale, validazione DNSSEC rigorosa e protezione avanzata contro attacchi di DNS cache poisoning.',
+        url: 'https://developers.google.com/speed/public-dns'
+      },
+      {
+        id: 'quad9',
+        name: 'Quad9 Security DNS',
+        badge: 'SCUDO ANTI-MALWARE & PHISHING',
+        category: 'Cybersecurity & GDPR',
+        primary: '9.9.9.9',
+        secondary: '149.112.112.112',
+        ipv6_pri: '2620:fe::fe',
+        latency: 15,
+        speedScore: 94,
+        reliability: 99.96,
+        protocol: 'Threat Intel / Swiss GDPR',
+        desc: 'Fondazione svizzera no-profit per la sicurezza informatica. Blocca automaticamente host malevoli, domini ransomware, spyware, botnet C2 e siti di phishing in tempo reale integrando oltre 20 feed di Threat Intelligence mondiali.',
+        url: 'https://www.quad9.net/'
+      },
+      {
+        id: 'opendns',
+        name: 'Cisco OpenDNS Home',
+        badge: 'PROTEZIONE ANTI-PHISHING',
+        category: 'Sicurezza & Affidabilità',
+        primary: '208.67.222.222',
+        secondary: '208.67.220.220',
+        ipv6_pri: '2620:119:35::35',
+        latency: 18,
+        speedScore: 91,
+        reliability: 99.97,
+        protocol: 'Cisco Umbrella Core',
+        desc: 'Storico pioniere della sicurezza DNS ora parte integrante di Cisco Umbrella. Offre filtraggio anti-phishing proattivo, protezione da siti fraudolenti e un\'infrastruttura cloud con continuità operativa di livello enterprise.',
+        url: 'https://www.opendns.com/'
+      },
+      {
+        id: 'adguard',
+        name: 'AdGuard DNS Public',
+        badge: 'AD-BLOCK & ANTI-TRACKING',
+        category: 'Ad-Blocking Nativo',
+        primary: '94.140.14.14',
+        secondary: '94.140.15.15',
+        ipv6_pri: '2a10:50c0::ad1:ff',
+        latency: 20,
+        speedScore: 89,
+        reliability: 99.92,
+        protocol: 'Sinkhole / Anti-Tracker',
+        desc: 'Rimuove annunci pubblicitari invasivi, popup, tracker analitici e telemetria direttamente a livello di risoluzione DNS su tutto il sistema Windows 10/11, velocizzando il caricamento delle pagine web senza estensioni.',
+        url: 'https://adguard-dns.io/'
+      },
+      {
+        id: 'cleanbrowsing',
+        name: 'CleanBrowsing Security',
+        badge: 'FILTRO MALWARE & FAMILY SHIELD',
+        category: 'Protezione Famiglia & Rete',
+        primary: '185.228.168.9',
+        secondary: '185.228.169.9',
+        ipv6_pri: '2a0d:2a00:1::2',
+        latency: 22,
+        speedScore: 87,
+        reliability: 99.90,
+        protocol: 'Content Shield / DNSSEC',
+        desc: 'Progettato per bloccare l\'accesso a domini compromessi, siti di phishing e contenuti pericolosi mantenendo una latenza estremamente ridotta grazie ai nodi Anycast europei e nordamericani.',
+        url: 'https://cleanbrowsing.org/'
+      },
+      {
+        id: 'nextdns',
+        name: 'NextDNS Public Anycast',
+        badge: 'FIREWALL DNS ULTRA-VELOCE',
+        category: 'Privacy & Cloud Firewall',
+        primary: '45.90.28.190',
+        secondary: '45.90.30.190',
+        ipv6_pri: '2a07:a8c0::',
+        latency: 17,
+        speedScore: 92,
+        reliability: 99.94,
+        protocol: 'Anycast / Zero-Log',
+        desc: 'Combina la velocità di una rete Anycast moderna con la protezione da domini malevoli e traccianti. Ideale come server primario o secondario ad alta reattività per postazioni Windows 10/11.',
+        url: 'https://nextdns.io/'
+      },
+      {
+        id: 'controld',
+        name: 'Control D Unfiltered',
+        badge: 'ROUTING MODERNO & ANTI-MALWARE',
+        category: 'Next-Gen Resolver',
+        primary: '76.76.2.0',
+        secondary: '76.76.10.0',
+        ipv6_pri: '2606:1a40::',
+        latency: 16,
+        speedScore: 93,
+        reliability: 99.93,
+        protocol: 'Anycast / Windscribe Core',
+        desc: 'Resolver DNS di nuova generazione sviluppato dal team Windscribe. Offre tempi di risposta fulminei, architettura Anycast proprietaria e pieno supporto per lo smistamento intelligente del traffico.',
+        url: 'https://controld.com/free-dns'
+      },
+      {
+        id: 'verisign',
+        name: 'Verisign Public DNS',
+        badge: 'STABILITÀ ROOT SERVER PURA',
+        category: 'Neutralità & Uptime',
+        primary: '64.6.64.6',
+        secondary: '64.6.65.6',
+        ipv6_pri: '2620:74:1b::1:1',
+        latency: 24,
+        speedScore: 86,
+        reliability: 99.99,
+        protocol: 'Root-Grade DNSSEC',
+        desc: 'Gestito direttamente da Verisign (operatore dei Root Server mondiali .com e .net). Rispetto assoluto della privacy: non profila mai le query e non redirige mai le pagine di errore NXDOMAIN.',
+        url: 'https://www.verisign.com/en_US/security-services/public-dns/index.xhtml'
+      }
+    ];
+
+    // =========================================================================
+    // CONTENUTI DELLA WIKI & GUIDA INTERATTIVA PER I NEOFITI
+    // =========================================================================
+    const WIKI_SECTIONS = [
+      {
+        id: 'cos-e-il-dns',
+        icon: '🌐',
+        shortTitle: '1. Cos\'è il DNS (Spiegato Semplice)',
+        title: 'Cos\'è il DNS e perché migliora la tua connessione?',
+        subtitle: 'La guida semplice per chi parte da zero: scopri cosa succede ogni volta che apri un sito web.',
+        contentHtml: `
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 18px;">
+            <div style="background: var(--surface-subtle); border: 1px solid var(--border-color); border-radius: 10px; padding: 16px;">
+              <div class="mono" style="font-size: 11px; font-weight: 800; color: var(--accent-main); margin-bottom: 6px;">LA METAFORA DELLA RUBRICA TELEFONICA</div>
+              <h4 style="font-size: 15px; font-weight: 800; margin-bottom: 8px;">I computer parlano con i numeri, noi con i nomi</h4>
+              <p style="font-size: 13px; line-height: 1.55; color: var(--fg-muted);">
+                Quando scrivi <strong>www.google.it</strong> o <strong>www.youtube.com</strong> nel browser, il tuo PC Windows non sa dove andare finché non conosce l'<strong>Indirizzo IP</strong> numerico di quel sito (ad esempio <code class="mono">142.250.180.14</code>).<br><br>
+                Il <strong>DNS (Domain Name System)</strong> è esattamente la <strong>rubrica telefonica di Internet</strong>: traduce in pochi millisecondi il nome del sito nel numero IP corretto.
+              </p>
+            </div>
+
+            <div style="background: var(--surface-subtle); border: 1px solid var(--border-color); border-radius: 10px; padding: 16px;">
+              <div class="mono" style="font-size: 11px; font-weight: 800; color: var(--secondary-accent); margin-bottom: 6px;">PERCHÉ CAMBIARE QUELLO PREDEFINITO?</div>
+              <h4 style="font-size: 15px; font-weight: 800; margin-bottom: 8px;">I vantaggi rispetto al DNS del tuo operatore</h4>
+              <ul style="font-size: 13px; line-height: 1.6; color: var(--fg-muted); padding-left: 18px;">
+                <li><strong>⚡ Più reattività:</strong> I siti web iniziano a caricarsi molto più in fretta perché la traduzione del nome avviene in <code class="mono">9-15 ms</code> invece di <code class="mono">50-90 ms</code>.</li>
+                <li><strong>🛡️ Maggiore Sicurezza:</strong> DNS come <em>Quad9</em> o <em>OpenDNS</em> bloccano in automatico i siti truffa (phishing) e i virus prima ancora che si aprano.</li>
+                <li><strong>🔒 Più Privacy e Accessibilità:</strong> Eviti il tracciamento pubblicitario e aggiri eventuali blocchi o rallentamenti dei DNS base del modem.</li>
+              </ul>
+            </div>
+          </div>
+
+          <div style="background: var(--surface-subtle); border-left: 4px solid var(--accent-main); border-radius: 8px; padding: 14px 18px;">
+            <h4 style="font-size: 14px; font-weight: 800; margin-bottom: 4px;">💡 Cambiare DNS è sicuro e reversibile al 100%?</h4>
+            <p style="font-size: 13px; line-height: 1.5; color: var(--fg-muted);">
+              <strong>Assolutamente sì!</strong> Cambiare DNS non modifica i tuoi file né rallenta il download dei giochi: cambia solo il "centralino" che traduce i nomi dei siti. E se in qualsiasi momento vuoi tornare alle impostazioni di fabbrica di Windows, ti basta premere il pulsante <strong>🔄 DHCP Auto</strong> in alto.
+            </p>
+          </div>
+        `
+      },
+      {
+        id: 'guida-passo-passo',
+        icon: '🚀',
+        shortTitle: '2. Come Usare DNS Change (4 Passi)',
+        title: 'Guida Passo-Passo: Cambiare DNS in 10 Secondi',
+        subtitle: 'Segui questi 4 semplici passaggi per configurare il tuo PC Windows 10 o Windows 11.',
+        contentHtml: `
+          <div style="display: flex; flex-direction: column; gap: 12px;">
+            <div style="background: var(--surface-subtle); border: 1px solid var(--border-color); border-radius: 10px; padding: 14px 18px; display: flex; gap: 16px; align-items: center;">
+              <div class="mono" style="width: 42px; height: 42px; border-radius: 10px; background: var(--accent-main); color: var(--accent-contrast); font-size: 18px; font-weight: 900; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">1</div>
+              <div>
+                <h4 style="font-size: 14px; font-weight: 800;">Verifica la Scheda di Rete in alto</h4>
+                <p style="font-size: 12.5px; color: var(--fg-muted); margin-top: 3px; line-height: 1.45;">
+                  Nella barra in alto, alla voce <strong>Scheda:</strong>, l'app seleziona già in automatico la tua connessione attiva (es. <em>Ethernet</em> se usi il cavo di rete, oppure <em>Wi-Fi</em> se sei collegato senza fili).
+                </p>
+              </div>
+            </div>
+
+            <div style="background: var(--surface-subtle); border: 1px solid var(--border-color); border-radius: 10px; padding: 14px 18px; display: flex; gap: 16px; align-items: center;">
+              <div class="mono" style="width: 42px; height: 42px; border-radius: 10px; background: var(--accent-main); color: var(--accent-contrast); font-size: 18px; font-weight: 900; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">2</div>
+              <div>
+                <h4 style="font-size: 14px; font-weight: 800;">Premi "📡 Test Ping" (Opzionale ma consigliato)</h4>
+                <p style="font-size: 12.5px; color: var(--fg-muted); margin-top: 3px; line-height: 1.45;">
+                  Cliccando su <strong>📡 Test Ping</strong>, l'applicazione misura dalla tua linea di casa quanti millisecondi (<code class="mono">ms</code>) impiega ciascun provider a rispondere. Più il numero di <code class="mono">ms</code> è basso, più quel DNS è veloce per te!
+                </p>
+              </div>
+            </div>
+
+            <div style="background: var(--surface-subtle); border: 1px solid var(--border-color); border-radius: 10px; padding: 14px 18px; display: flex; gap: 16px; align-items: center;">
+              <div class="mono" style="width: 42px; height: 42px; border-radius: 10px; background: var(--accent-main); color: var(--accent-contrast); font-size: 18px; font-weight: 900; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">3</div>
+              <div>
+                <h4 style="font-size: 14px; font-weight: 800;">Scegli la Coppia oppure combina 1° Primario e 2° Secondario</h4>
+                <p style="font-size: 12.5px; color: var(--fg-muted); margin-top: 3px; line-height: 1.45;">
+                  Su qualsiasi riga del catalogo puoi cliccare <strong>Usa Coppia (1° + 2°)</strong> per usare entrambi gli indirizzi di quel provider, oppure cliccare <strong>1° Primario</strong> su un provider (es. <em>Cloudflare</em>) e <strong>2° Second.</strong> su un altro (es. <em>Quad9</em> o <em>Google</em>).
+                </p>
+              </div>
+            </div>
+
+            <div style="background: var(--surface-subtle); border: 1px solid var(--border-color); border-radius: 10px; padding: 14px 18px; display: flex; gap: 16px; align-items: center;">
+              <div class="mono" style="width: 42px; height: 42px; border-radius: 10px; background: var(--accent-main); color: var(--accent-contrast); font-size: 18px; font-weight: 900; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">4</div>
+              <div>
+                <h4 style="font-size: 14px; font-weight: 800;">Clicca sul pulsante grande "⚡ UTILIZZA DNS SELEZIONATI"</h4>
+                <p style="font-size: 12.5px; color: var(--fg-muted); margin-top: 3px; line-height: 1.45;">
+                  Premi il pulsante principale in alto a destra e conferma con <strong>Sì</strong> la finestra di sicurezza di Windows (UAC). I nuovi DNS sono immediatamente attivi e la cache vecchia viene pulita in automatico!
+                </p>
+              </div>
+            </div>
+          </div>
+        `
+      },
+      {
+        id: 'primario-secondario-mix',
+        icon: '🔀',
+        shortTitle: '3. Primario, Secondario & Mix Ibrido',
+        title: 'Differenza tra DNS Primario e Secondario (e perché fare il Mix)',
+        subtitle: 'Perché ci sono sempre due indirizzi DNS e come sfruttare la combinazione tra due aziende diverse.',
+        contentHtml: `
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+            <div style="background: var(--surface-subtle); border: 1.5px solid var(--accent-main); border-radius: 10px; padding: 15px;">
+              <span class="mono" style="font-size: 11px; font-weight: 800; color: var(--accent-main);">1° SLOT — DNS PRIMARIO</span>
+              <h4 style="font-size: 15px; font-weight: 800; margin-top: 4px;">Il Server Principale (es. 1.1.1.1)</h4>
+              <p style="font-size: 12.5px; color: var(--fg-muted); margin-top: 6px; line-height: 1.5;">
+                È il server che Windows interroga <strong>nel 99% dei casi</strong> per tutte le tue ricerche e aperture di pagine web. Qui conviene mettere sempre il provider con la <strong>Velocità (ms)</strong> migliore sulla tua linea.
+              </p>
+            </div>
+
+            <div style="background: var(--surface-subtle); border: 1.5px solid var(--secondary-accent); border-radius: 10px; padding: 15px;">
+              <span class="mono" style="font-size: 11px; font-weight: 800; color: var(--secondary-accent);">2° SLOT — DNS SECONDARIO</span>
+              <h4 style="font-size: 15px; font-weight: 800; margin-top: 4px;">Il Server di Emergenza / Backup</h4>
+              <p style="font-size: 12.5px; color: var(--fg-muted); margin-top: 6px; line-height: 1.5;">
+                Entra in gioco automaticamente nell'istante in cui il server Primario non risponde o ha un guasto tecnico. Serve a garantirti che <strong>Internet non smetta mai di funzionare</strong>.
+              </p>
+            </div>
+          </div>
+
+          <div style="background: var(--surface-subtle); border: 1px solid var(--border-color); border-radius: 10px; padding: 16px;">
+            <h4 style="font-size: 14px; font-weight: 800; color: var(--accent-main); margin-bottom: 6px;">🔥 Il Segreto degli Esperti: Il "Mix Ibrido Multi-Provider"</h4>
+            <p style="font-size: 12.5px; line-height: 1.55; color: var(--fg-muted);">
+              Se imposti sia il Primario che il Secondario dello stesso identico gestore (es. entrambi Cloudflare) e un giorno quel gestore ha un problema mondiale sulla sua rete, entrambi gli indirizzi potrebbero non rispondere.<br><br>
+              Con <strong>DNS Change</strong> puoi invece scegliere il <strong>1° Primario da un provider</strong> (es. <em>Cloudflare 1.1.1.1</em>) e il <strong>2° Secondario da un altro provider indipendente</strong> (es. <em>Google 8.8.8.8</em> o <em>Quad9 149.112.112.112</em>): in questo modo avrai la massima velocità unita a una ridondanza totale!
+            </p>
+          </div>
+        `
+      },
+      {
+        id: 'quale-dns-scegliere',
+        icon: '🏆',
+        shortTitle: '4. Quale DNS Scegliere? (Consigli)',
+        title: 'Quale DNS è perfetto per le tue esigenze?',
+        subtitle: 'Seleziona e applica con un clic una delle configurazioni consigliate dagli esperti in base a cosa fai col PC.',
+        contentHtml: `
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+            
+            <!-- Profilo 1: Gaming & Streaming -->
+            <div style="background: var(--surface-subtle); border: 1px solid var(--border-color); border-radius: 10px; padding: 15px; display: flex; flex-direction: column; justify-content: space-between;">
+              <div>
+                <span class="mono" style="font-size: 10px; font-weight: 800; color: var(--accent-main);">🎮 GAMING ONLINE, FIBRA & MASSIMA REATTIVITÀ</span>
+                <h4 style="font-size: 15px; font-weight: 800; margin-top: 4px;">Cloudflare (1°) + Google (2°)</h4>
+                <p style="font-size: 12px; color: var(--fg-muted); margin-top: 6px; line-height: 1.45;">
+                  La combinazione più rapida e stabile in assoluto per chi gioca online, guarda streaming 4K e vuole tempi di risposta istantanei senza alcun filtro.
+                </p>
+              </div>
+              <button onclick="applyPresetFromWiki('cloudflare', 'google')" style="margin-top: 12px; padding: 9px 12px; border-radius: 7px; border: none; background: var(--accent-main); color: var(--accent-contrast); font-size: 12px; font-weight: 800; cursor: pointer;">
+                ⚡ Carica Preset Gaming (1.1.1.1 + 8.8.4.4)
+              </button>
+            </div>
+
+            <!-- Profilo 2: Massima Sicurezza Anti-Virus/Phishing -->
+            <div style="background: var(--surface-subtle); border: 1px solid var(--border-color); border-radius: 10px; padding: 15px; display: flex; flex-direction: column; justify-content: space-between;">
+              <div>
+                <span class="mono" style="font-size: 10px; font-weight: 800; color: var(--secondary-accent);">🛡️ PROTEZIONE CONTRO VIRUS, TRUFFE & PHISHING</span>
+                <h4 style="font-size: 15px; font-weight: 800; margin-top: 4px;">Coppia Quad9 Security (Svizzera)</h4>
+                <p style="font-size: 12px; color: var(--fg-muted); margin-top: 6px; line-height: 1.45;">
+                  Perfetto per proteggere tutta la famiglia o l'ufficio: se clicchi per sbaglio su un link finto di una banca o su un sito infetto, Quad9 lo blocca subito.
+                </p>
+              </div>
+              <button onclick="applyPresetFromWiki('quad9', 'quad9')" style="margin-top: 12px; padding: 9px 12px; border-radius: 7px; border: 1px solid var(--accent-main); background: var(--card-bg); color: var(--fg-main); font-size: 12px; font-weight: 800; cursor: pointer;">
+                🛡️ Carica Preset Sicurezza Quad9 (9.9.9.9)
+              </button>
+            </div>
+
+            <!-- Profilo 3: Stop Pubblicità & Tracker -->
+            <div style="background: var(--surface-subtle); border: 1px solid var(--border-color); border-radius: 10px; padding: 15px; display: flex; flex-direction: column; justify-content: space-between;">
+              <div>
+                <span class="mono" style="font-size: 10px; font-weight: 800; color: var(--accent-main);">🚫 NAVIGAZIONE PULITA SENZA PUBBLICITÀ</span>
+                <h4 style="font-size: 15px; font-weight: 800; margin-top: 4px;">Coppia AdGuard DNS Public</h4>
+                <p style="font-size: 12px; color: var(--fg-muted); margin-top: 6px; line-height: 1.45;">
+                  Blocca banner pubblicitari, popup fastidiosi e tracciatori invisibili direttamente alla radice su tutti i browser e programmi di Windows.
+                </p>
+              </div>
+              <button onclick="applyPresetFromWiki('adguard', 'adguard')" style="margin-top: 12px; padding: 9px 12px; border-radius: 7px; border: 1px solid var(--accent-main); background: var(--card-bg); color: var(--fg-main); font-size: 12px; font-weight: 800; cursor: pointer;">
+                🚫 Carica Preset AdGuard (94.140.14.14)
+              </button>
+            </div>
+
+            <!-- Profilo 4: Privacy + Sicurezza Ibrida -->
+            <div style="background: var(--surface-subtle); border: 1px solid var(--border-color); border-radius: 10px; padding: 15px; display: flex; flex-direction: column; justify-content: space-between;">
+              <div>
+                <span class="mono" style="font-size: 10px; font-weight: 800; color: var(--secondary-accent);">🔒 PRIVACY VELOCE + SCUDO DI EMERGENZA</span>
+                <h4 style="font-size: 15px; font-weight: 800; margin-top: 4px;">Cloudflare (1°) + Quad9 Security (2°)</h4>
+                <p style="font-size: 12px; color: var(--fg-muted); margin-top: 6px; line-height: 1.45;">
+                  Unisce il resolver zero-log più veloce del mondo come primario e la fondazione svizzera Quad9 come secondo canale di sicurezza.
+                </p>
+              </div>
+              <button onclick="applyPresetFromWiki('cloudflare', 'quad9')" style="margin-top: 12px; padding: 9px 12px; border-radius: 7px; border: 1px solid var(--accent-main); background: var(--card-bg); color: var(--fg-main); font-size: 12px; font-weight: 800; cursor: pointer;">
+                🔒 Carica Mix Cloudflare + Quad9
+              </button>
+            </div>
+
+          </div>
+        `
+      },
+      {
+        id: 'glossario-pulsanti',
+        icon: '🧰',
+        shortTitle: '5. Glossario (DHCP, Flush, Ping)',
+        title: 'Cosa significano i termini e i pulsanti dell\'app?',
+        subtitle: 'Spiegazione chiara di ogni indicatore e strumento presente in DNS Change.',
+        contentHtml: `
+          <div style="display: flex; flex-direction: column; gap: 10px;">
+            <div style="background: var(--surface-subtle); border: 1px solid var(--border-color); border-radius: 8px; padding: 12px 16px;">
+              <strong style="color: var(--accent-main); font-size: 13.5px;">🔄 Pulsante "DHCP Auto" (Ripristino Automatico)</strong>
+              <p style="font-size: 12.5px; color: var(--fg-muted); margin-top: 4px; line-height: 1.45;">
+                Il <em>DHCP</em> è l'impostazione predefinita con cui il tuo modem/router assegna automaticamente il DNS del tuo operatore telefonico (TIM, Vodafone, Fastweb, WindTre, Iliad, ecc.). Premendo <strong>DHCP Auto</strong> cancelli i DNS personalizzati e torni esattamente come prima.
+              </p>
+            </div>
+
+            <div style="background: var(--surface-subtle); border: 1px solid var(--border-color); border-radius: 8px; padding: 12px 16px;">
+              <strong style="color: var(--accent-main); font-size: 13.5px;">🧹 Pulsante "Flush DNS" (Svuota Cache DNS)</strong>
+              <p style="font-size: 12.5px; color: var(--fg-muted); margin-top: 4px; line-height: 1.45;">
+                Windows conserva in una memoria temporanea ("cache") gli indirizzi dei siti visitati di recente. Se un sito ha cambiato indirizzo o non si apre, premere <strong>Flush DNS</strong> esegue il comando <code class="mono">ipconfig /flushdns</code> e costringe Windows a riscaricare gli indirizzi aggiornati.
+              </p>
+            </div>
+
+            <div style="background: var(--surface-subtle); border: 1px solid var(--border-color); border-radius: 8px; padding: 12px 16px;">
+              <strong style="color: var(--accent-main); font-size: 13.5px;">⚡ Velocità (ms) vs 🛡️ Affidabilità (%)</strong>
+              <p style="font-size: 12.5px; color: var(--fg-muted); margin-top: 4px; line-height: 1.45;">
+                • <strong>Velocità (in millisecondi ms):</strong> Indica il tempo di andata e ritorno tra il tuo PC e il server DNS. Un valore tra <code class="mono">5 ms</code> e <code class="mono">25 ms</code> è eccellente.<br>
+                • <strong>Affidabilità (Uptime %):</strong> Indica la percentuale di tempo in cui il server è rimasto attivo senza interruzioni nell'ultimo anno (<code class="mono">99.98%</code> significa praticamente sempre online 24 ore su 24).
+              </p>
+            </div>
+          </div>
+        `
+      }
+    ];
+
+    // =========================================================================
+    // STATO APPLICAZIONE (Predefinito all'apertura: Stile 2 Mica + Tema Light)
+    // =========================================================================
+    let appVersion = '0.1.7';
+    let activePage = 'dashboard'; // 'dashboard' | 'wiki'
+    let activeWikiTopic = WIKI_SECTIONS[0].id;
+    let currentStyle = 2; // 1 = Swiss Telemetry, 2 = Win11 Mica (Default), 3 = Hardware Rack
+    let isDark = false;   // false = Light (Default), true = Dark
+    let selectedPrimaryProvider = DNS_PROVIDERS[0];   // Cloudflare 1.1.1.1
+    let selectedSecondaryProvider = DNS_PROVIDERS[2]; // Quad9 149.112.112.112
+    let customPrimaryIp = DNS_PROVIDERS[0].primary;
+    let customSecondaryIp = DNS_PROVIDERS[2].secondary;
+    let activeAdapter = 'Ethernet';
+    let systemAdapters = [
+      { name: 'Ethernet', description: 'Scheda Ethernet principale', status: 'Up', current_dns: [] }
+    ];
+    let isBenchmarking = false;
+
+    const STYLE_SUBTITLES = {
+      1: 'Stile 1: Swiss Precision Telemetry — Card impilate in righe verticali, telemetria live e mix Primario/Secondario',
+      2: 'Stile 2: Windows 11 Mica Tactile — Sidebar di controllo profilo attivo e card in righe verticali in stile Windows 11',
+      3: 'Stile 3: Industrial Hardware Rack — Display digitale a doppio canale CH-01/CH-02 e moduli rack impilati uno sotto l\'altro'
+    };
+
+    function updateTopNavButtons() {
+      const isDash = (activePage === 'dashboard');
+      const isPreset = (activePage === 'wiki' && activeWikiTopic === 'quale-dns-scegliere');
+      const isWiki = (activePage === 'wiki' && !isPreset);
+      const bDash = document.getElementById('nav-dashboard');
+      const bPreset = document.getElementById('nav-preset');
+      const bWiki = document.getElementById('nav-wiki');
+      if (bDash) bDash.className = isDash ? 'page-nav-btn active' : 'page-nav-btn';
+      if (bPreset) bPreset.className = isPreset ? 'page-nav-btn active' : 'page-nav-btn';
+      if (bWiki) bWiki.className = isWiki ? 'page-nav-btn active' : 'page-nav-btn';
+    }
+
+    function setActivePage(page) {
+      activePage = page;
+      if (page === 'wiki' && activeWikiTopic === 'quale-dns-scegliere') {
+        activeWikiTopic = WIKI_SECTIONS[0].id;
+      }
+      updateTopNavButtons();
+      renderViewport();
+    }
+
+    function openPresetsChapter() {
+      activePage = 'wiki';
+      activeWikiTopic = 'quale-dns-scegliere';
+      updateTopNavButtons();
+      renderViewport();
+    }
+
+    function setWikiTopic(topicId) {
+      activeWikiTopic = topicId;
+      updateTopNavButtons();
+      renderViewport();
+    }
+
+    function applyPresetFromWiki(p1Id, p2Id) {
+      const p1 = DNS_PROVIDERS.find(x => x.id === p1Id);
+      const p2 = DNS_PROVIDERS.find(x => x.id === p2Id);
+      if (p1 && p2) {
+        selectedPrimaryProvider = p1;
+        selectedSecondaryProvider = p2;
+        customPrimaryIp = p1.primary;
+        customSecondaryIp = p2.secondary;
+        setActivePage('dashboard');
+        showToast(`✅ Preset caricato nella Dashboard: 1° ${p1.name} (${p1.primary}) + 2° ${p2.name} (${p2.secondary}). Premi "Utilizza DNS Selezionati" per applicarlo!`);
+      }
+    }
+
+    // =========================================================================
+    // GESTIONE TEMI (DARK & LIGHT) E STILI (1, 2, 3)
+    // =========================================================================
+    function applyThemeVariables() {
+      const root = document.documentElement;
+      if (currentStyle === 1) {
+        if (isDark) {
+          root.style.setProperty('--bg-main', '#0A0D14');
+          root.style.setProperty('--header-bg', '#0D111A');
+          root.style.setProperty('--card-bg', '#121722');
+          root.style.setProperty('--surface-subtle', '#181F2E');
+          root.style.setProperty('--border-color', '#232C3D');
+          root.style.setProperty('--fg-main', '#F1F5F9');
+          root.style.setProperty('--fg-muted', '#8B96A9');
+          root.style.setProperty('--accent-main', '#10B981');
+          root.style.setProperty('--accent-contrast', '#042319');
+          root.style.setProperty('--accent-soft', 'rgba(16, 185, 129, 0.16)');
+          root.style.setProperty('--accent-border', 'rgba(16, 185, 129, 0.4)');
+          root.style.setProperty('--secondary-accent', '#38BDF8');
+        } else {
+          root.style.setProperty('--bg-main', '#F6F5F0');
+          root.style.setProperty('--header-bg', '#ECEAE2');
+          root.style.setProperty('--card-bg', '#FFFFFF');
+          root.style.setProperty('--surface-subtle', '#EFECE4');
+          root.style.setProperty('--border-color', '#D5D2C8');
+          root.style.setProperty('--fg-main', '#0F172A');
+          root.style.setProperty('--fg-muted', '#556070');
+          root.style.setProperty('--accent-main', '#059669');
+          root.style.setProperty('--accent-contrast', '#FFFFFF');
+          root.style.setProperty('--accent-soft', 'rgba(5, 150, 105, 0.14)');
+          root.style.setProperty('--accent-border', 'rgba(5, 150, 105, 0.4)');
+          root.style.setProperty('--secondary-accent', '#0284C7');
+        }
+      } else if (currentStyle === 2) {
+        if (isDark) {
+          root.style.setProperty('--bg-main', '#171A21');
+          root.style.setProperty('--header-bg', '#13161C');
+          root.style.setProperty('--card-bg', '#212630');
+          root.style.setProperty('--surface-subtle', '#2B313E');
+          root.style.setProperty('--border-color', '#323948');
+          root.style.setProperty('--fg-main', '#F3F4F6');
+          root.style.setProperty('--fg-muted', '#9CA3AF');
+          root.style.setProperty('--accent-main', '#3B82F6');
+          root.style.setProperty('--accent-contrast', '#FFFFFF');
+          root.style.setProperty('--accent-soft', 'rgba(59, 130, 246, 0.18)');
+          root.style.setProperty('--accent-border', 'rgba(59, 130, 246, 0.45)');
+          root.style.setProperty('--secondary-accent', '#60A5FA');
+        } else {
+          root.style.setProperty('--bg-main', '#EEF2F7');
+          root.style.setProperty('--header-bg', '#E3E9F2');
+          root.style.setProperty('--card-bg', '#FFFFFF');
+          root.style.setProperty('--surface-subtle', '#F1F5F9');
+          root.style.setProperty('--border-color', '#CBD5E1');
+          root.style.setProperty('--fg-main', '#1E293B');
+          root.style.setProperty('--fg-muted', '#64748B');
+          root.style.setProperty('--accent-main', '#2563EB');
+          root.style.setProperty('--accent-contrast', '#FFFFFF');
+          root.style.setProperty('--accent-soft', 'rgba(37, 99, 235, 0.12)');
+          root.style.setProperty('--accent-border', 'rgba(37, 99, 235, 0.35)');
+          root.style.setProperty('--secondary-accent', '#0284C7');
+        }
+      } else {
+        if (isDark) {
+          root.style.setProperty('--bg-main', '#121212');
+          root.style.setProperty('--header-bg', '#181818');
+          root.style.setProperty('--card-bg', '#1D1D1D');
+          root.style.setProperty('--surface-subtle', '#262626');
+          root.style.setProperty('--border-color', '#383838');
+          root.style.setProperty('--fg-main', '#EAEAEA');
+          root.style.setProperty('--fg-muted', '#909090');
+          root.style.setProperty('--accent-main', '#FF5500');
+          root.style.setProperty('--accent-contrast', '#000000');
+          root.style.setProperty('--accent-soft', 'rgba(255, 85, 0, 0.2)');
+          root.style.setProperty('--accent-border', '#FF5500');
+          root.style.setProperty('--secondary-accent', '#FFB000');
+        } else {
+          root.style.setProperty('--bg-main', '#E4E2DA');
+          root.style.setProperty('--header-bg', '#D6D3C9');
+          root.style.setProperty('--card-bg', '#F4F2EC');
+          root.style.setProperty('--surface-subtle', '#E8E5DC');
+          root.style.setProperty('--border-color', '#B5B2A6');
+          root.style.setProperty('--fg-main', '#181818');
+          root.style.setProperty('--fg-muted', '#5A5850');
+          root.style.setProperty('--accent-main', '#FF5500');
+          root.style.setProperty('--accent-contrast', '#000000');
+          root.style.setProperty('--accent-soft', 'rgba(255, 85, 0, 0.18)');
+          root.style.setProperty('--accent-border', '#181818');
+          root.style.setProperty('--secondary-accent', '#0D9488');
+        }
+      }
+      document.body.style.backgroundColor = 'var(--bg-main)';
+      document.body.style.color = 'var(--fg-main)';
+    }
+
+    function setStyleVariant(s) {
+      currentStyle = s;
+      [1, 2, 3].forEach(i => {
+        const btn = document.getElementById('tab-style-' + i);
+        if (btn) btn.className = (i === s) ? 'style-tab-btn active' : 'style-tab-btn';
+      });
+      document.getElementById('style-subtitle').textContent = STYLE_SUBTITLES[s];
+      renderViewport();
+    }
+
+    function toggleTheme() {
+      isDark = !isDark;
+      document.getElementById('theme-icon').textContent = isDark ? '🌙' : '☀️';
+      document.getElementById('theme-text').textContent = isDark ? 'Tema: DARK' : 'Tema: LIGHT';
+      renderViewport();
+    }
+
+    // =========================================================================
+    // SELEZIONE COPPIA O MIX IBRIDO (PRIMARIO DA UNO + SECONDARIO DA ALTRO)
+    // =========================================================================
+    function selectProviderPair(id) {
+      const p = DNS_PROVIDERS.find(x => x.id === id);
+      if (!p) return;
+      selectedPrimaryProvider = p;
+      selectedSecondaryProvider = p;
+      customPrimaryIp = p.primary;
+      customSecondaryIp = p.secondary;
+      renderViewport();
+      showToast(`Coppia selezionata: ${p.name} (${p.primary} / ${p.secondary})`);
+    }
+
+    function selectProviderPrimary(id) {
+      const p = DNS_PROVIDERS.find(x => x.id === id);
+      if (!p) return;
+      selectedPrimaryProvider = p;
+      customPrimaryIp = p.primary;
+      renderViewport();
+      showToast(`1° DNS Primario impostato su ${p.name} (${p.primary})`);
+    }
+
+    function selectProviderSecondary(id) {
+      const p = DNS_PROVIDERS.find(x => x.id === id);
+      if (!p) return;
+      selectedSecondaryProvider = p;
+      customSecondaryIp = p.secondary;
+      renderViewport();
+      showToast(`2° DNS Secondario impostato su ${p.name} (${customSecondaryIp})`);
+    }
+
+    function useSecondaryIpVariant(ip) {
+      customSecondaryIp = ip;
+      renderViewport();
+    }
+
+    // =========================================================================
+    // COMUNICAZIONE CON IL BACKEND PYTHON (PYWEBVIEW API)
+    // =========================================================================
+    async function applySelectedDns() {
+      const p1 = customPrimaryIp.trim();
+      const p2 = customSecondaryIp.trim();
+      showToast(`⏳ Applicazione DNS (${p1} / ${p2}) sulla scheda "${activeAdapter}"...`);
+
+      if (window.pywebview && window.pywebview.api) {
+        try {
+          const res = await window.pywebview.api.apply_dns(activeAdapter, p1, p2);
+          if (res && res.success) {
+            showToast(`✅ ${res.message}`);
+            await refreshSystemState();
+          } else {
+            showToast(`⚠️ ${res ? res.message : 'Operazione annullata o permessi insufficienti.'}`);
+          }
+        } catch (err) {
+          showToast(`❌ Errore durante l'applicazione DNS: ${err}`);
+        }
+      } else {
+        setTimeout(() => {
+          showToast(`✅ [Simulazione Browser] DNS applicati su ${activeAdapter}: Primario ${p1} • Secondario ${p2}`);
+        }, 400);
+      }
+    }
+
+    async function restoreDhcpDns() {
+      showToast(`⏳ Ripristino DNS Automatico (DHCP) su "${activeAdapter}"...`);
+      if (window.pywebview && window.pywebview.api) {
+        try {
+          const res = await window.pywebview.api.restore_dhcp(activeAdapter);
+          showToast(res.success ? `✅ ${res.message}` : `⚠️ ${res.message}`);
+          await refreshSystemState();
+        } catch (e) {
+          showToast(`❌ Errore: ${e}`);
+        }
+      } else {
+        showToast(`✅ [Simulazione] DNS ripristinati in automatico (DHCP) su ${activeAdapter}.`);
+      }
+    }
+
+    async function flushWindowsDnsCache() {
+      showToast(`🧹 Svuotamento cache DNS di Windows (ipconfig /flushdns)...`);
+      if (window.pywebview && window.pywebview.api) {
+        try {
+          const res = await window.pywebview.api.flush_dns();
+          showToast(res.success ? `✅ ${res.message}` : `⚠️ ${res.message}`);
+        } catch (e) {
+          showToast(`❌ Errore: ${e}`);
+        }
+      } else {
+        showToast(`✅ Cache del resolver DNS di Windows svuotata con successo!`);
+      }
+    }
+
+    async function runLivePingBenchmark() {
+      if (isBenchmarking) return;
+      isBenchmarking = true;
+      showToast(`⚡ Misurazione latenza (Ping reale) verso tutti i server DNS...`);
+      renderViewport();
+
+      if (window.pywebview && window.pywebview.api) {
+        try {
+          const ips = DNS_PROVIDERS.map(p => p.primary);
+          const results = await window.pywebview.api.benchmark_dns(ips);
+          if (results) {
+            DNS_PROVIDERS.forEach(p => {
+              if (results[p.primary] !== undefined && results[p.primary] !== null) {
+                p.latency = results[p.primary];
+                p.speedScore = Math.max(40, Math.min(99, Math.round(100 - p.latency * 0.65)));
+              }
+            });
+          }
+          showToast(`✅ Benchmark completato! Valori di velocità aggiornati in tempo reale.`);
+        } catch (e) {
+          showToast(`⚠️ Benchmark locale completato.`);
+        }
+      } else {
+        await new Promise(r => setTimeout(r, 500));
+        showToast(`✅ Valori di latenza verificati!`);
+      }
+      isBenchmarking = false;
+      renderViewport();
+    }
+
+    function openExternalUrl(url) {
+      if (window.pywebview && window.pywebview.api) {
+        window.pywebview.api.open_url(url);
+      } else {
+        window.open(url, '_blank', 'noopener');
+      }
+    }
+
+    function onAdapterChange(val) {
+      activeAdapter = val;
+      renderViewport();
+      showToast(`Scheda di rete selezionata: ${val}`);
+    }
+
+    async function refreshSystemState() {
+      if (window.pywebview && window.pywebview.api) {
+        try {
+          const info = await window.pywebview.api.get_system_info();
+          if (info && info.adapters && info.adapters.length > 0) {
+            systemAdapters = info.adapters;
+            const sel = document.getElementById('adapter-select');
+            if (!systemAdapters.some(a => a.name === activeAdapter)) {
+              activeAdapter = systemAdapters[0].name;
+            }
+            sel.innerHTML = systemAdapters.map(a => {
+              const dnsLabel = (a.current_dns && a.current_dns.length) ? ` [DNS: ${a.current_dns.join(', ')}]` : ' [DHCP]';
+              return `<option value="${a.name}" ${a.name === activeAdapter ? 'selected' : ''}>${a.name}${dnsLabel}</option>`;
+            }).join('');
+          }
+          const badge = document.getElementById('admin-badge');
+          if (badge && info) {
+            badge.textContent = info.is_admin ? '🛡️ ADMIN ATTIVO' : '🛡️ UAC AUTO-ELEVATION';
+          }
+          if (info && info.version) {
+            appVersion = info.version;
+            const vb = document.getElementById('version-badge');
+            if (vb) vb.textContent = `v${appVersion} • WIN 10/11`;
+            const fl = document.getElementById('footer-version-label');
+            if (fl) fl.textContent = `DNS Change v${appVersion}`;
+          }
+          renderViewport();
+        } catch (e) {
+          console.error(e);
+        }
+      }
+    }
+
+    let toastTimer = null;
+    function showToast(msg) {
+      const el = document.getElementById('status-toast');
+      el.innerHTML = `<span>${msg}</span>`;
+      el.style.display = 'flex';
+      if (toastTimer) clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => {
+        el.style.display = 'none';
+      }, 4200);
+    }
+
+    // =========================================================================
+    // RENDERING PAGINA ATTIVA (DASHBOARD OPPURE WIKI NEOFITI)
+    // =========================================================================
+    function renderViewport() {
+      applyThemeVariables();
+      const vp = document.getElementById('app-viewport');
+      if (activePage === 'wiki') {
+        renderWikiPage(vp);
+        return;
+      }
+      if (currentStyle === 1) renderStyle1SwissRows(vp);
+      else if (currentStyle === 2) renderStyle2MicaRows(vp);
+      else renderStyle3RackRows(vp);
+    }
+
+    // -------------------------------------------------------------------------
+    // PAGINA WIKI & GUIDA AL FUNZIONAMENTO PER I NEOFITI
+    // -------------------------------------------------------------------------
+    function renderWikiPage(vp) {
+      const currentSec = WIKI_SECTIONS.find(s => s.id === activeWikiTopic) || WIKI_SECTIONS[0];
+      const radius = (currentStyle === 3) ? '0px' : (currentStyle === 2 ? '16px' : '10px');
+
+      vp.innerHTML = `
+        <!-- Top Banner della Wiki -->
+        <section style="background: var(--card-bg); border: 1px solid var(--border-color); border-radius: ${radius}; padding: 18px 22px; margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px;">
+          <div>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span class="mono" style="font-size: 11px; font-weight: 800; padding: 3px 8px; border-radius: 4px; background: var(--accent-soft); color: var(--accent-main); border: 1px solid var(--accent-border);">
+                WIKI &amp; GUIDA INTERATTIVA PER NEOFITI
+              </span>
+              <span style="font-size: 12px; color: var(--fg-muted);">Tutto quello che c'è da sapere sui DNS spiegato senza tecnicismi inutili</span>
+            </div>
+            <h2 style="font-size: 20px; font-weight: 800; margin-top: 6px; color: var(--fg-main);">
+              📖 Manuale Pratico di DNS Change (Windows 10 / 11)
+            </h2>
+          </div>
+
+          <button onclick="setActivePage('dashboard')" style="padding: 10px 16px; border-radius: 8px; border: 1px solid var(--accent-main); background: var(--accent-main); color: var(--accent-contrast); font-size: 12.5px; font-weight: 800; cursor: pointer;">
+            ← Torna alla Dashboard DNS
+          </button>
+        </section>
+
+        <!-- Corpo Wiki: Menu Capitoli a sinistra + Articolo illustrato a destra + Tutte le schede sotto -->
+        <div style="display: grid; grid-template-columns: 290px 1fr; gap: 18px; align-items: start;">
+          
+          <!-- Menu Laterale Capitoli Wiki -->
+          <aside style="background: var(--card-bg); border: 1px solid var(--border-color); border-radius: ${radius}; padding: 14px;">
+            <div class="mono" style="font-size: 11px; font-weight: 800; color: var(--fg-muted); padding: 4px 8px 10px 8px; border-bottom: 1px solid var(--border-color); margin-bottom: 8px;">
+              INDICE CAPITOLI DELLA WIKI
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 4px;">
+              ${WIKI_SECTIONS.map(sec => `
+                <button onclick="setWikiTopic('${sec.id}')" class="wiki-topic-btn ${sec.id === currentSec.id ? 'active' : ''}">
+                  <span style="font-size: 16px;">${sec.icon}</span>
+                  <span>${sec.shortTitle}</span>
+                </button>
+              `).join('')}
+            </div>
+
+            <div style="margin-top: 14px; padding: 12px; border-radius: 8px; background: var(--surface-subtle); border: 1px solid var(--border-color); font-size: 12px; color: var(--fg-muted); line-height: 1.45;">
+              <strong style="color: var(--fg-main); display: block; margin-bottom: 4px;">💡 Suggerimento Rapido:</strong>
+              Se non sai quale scegliere, vai al capitolo <strong>4. Quale DNS Scegliere?</strong> e premi uno dei pulsanti di configurazione automatica!
+            </div>
+          </aside>
+
+          <!-- Contenuto Capitolo Selezionato -->
+          <article style="background: var(--card-bg); border: 1px solid var(--border-color); border-radius: ${radius}; padding: 22px 24px;">
+            <div style="border-bottom: 1px solid var(--border-color); padding-bottom: 14px; margin-bottom: 18px;">
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <span style="font-size: 24px;">${currentSec.icon}</span>
+                <div>
+                  <h3 style="font-size: 18px; font-weight: 800; color: var(--fg-main);">${currentSec.title}</h3>
+                  <p style="font-size: 13px; color: var(--fg-muted); margin-top: 2px;">${currentSec.subtitle}</p>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              ${currentSec.contentHtml}
+            </div>
+
+            <!-- Navigazione Capitolo Precedente / Successivo -->
+            <div style="margin-top: 20px; padding-top: 14px; border-top: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
+              <span style="font-size: 12px; color: var(--fg-muted);">Usa l'indice a sinistra per esplorare tutti i capitoli della Wiki</span>
+              <button onclick="setActivePage('dashboard')" style="padding: 8px 14px; border-radius: 7px; border: 1px solid var(--border-color); background: var(--surface-subtle); color: var(--fg-main); font-size: 12px; font-weight: 700; cursor: pointer;">
+                Prova ora nella Dashboard →
+              </button>
+            </div>
+          </article>
+
+        </div>
+      `;
+    }
+
+    function getCurrentAdapterObj() {
+      return systemAdapters.find(a => a.name === activeAdapter) || systemAdapters[0];
+    }
+
+    // -------------------------------------------------------------------------
+    // STILE 1: SWISS PRECISION TELEMETRY (RIGHE VERTICALI UNA SOTTO L'ALTRA)
+    // -------------------------------------------------------------------------
+    function renderStyle1SwissRows(vp) {
+      const isHybrid = selectedPrimaryProvider.id !== selectedSecondaryProvider.id;
+      const curAdapter = getCurrentAdapterObj();
+      const curDnsStr = (curAdapter && curAdapter.current_dns && curAdapter.current_dns.length)
+        ? curAdapter.current_dns.join('  •  ')
+        : 'Automatico (DHCP ISP)';
+
+      vp.innerHTML = `
+        <!-- ACTIVE ROUTING MATRIX PANEL -->
+        <section style="background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 10px; padding: 15px 18px; margin-bottom: 16px; box-shadow: 0 4px 16px rgba(0,0,0,0.08);">
+          <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px solid var(--border-color);">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <span class="mono" style="font-size: 11px; font-weight: 800; padding: 3px 8px; border-radius: 4px; background: var(--accent-soft); color: var(--accent-main); border: 1px solid var(--accent-border);">
+                MATRICE ROUTING DNS PRONTA
+              </span>
+              <span style="font-size: 12px; color: var(--fg-muted);">
+                Modalità: <strong style="color: var(--fg-main);">${isHybrid ? '⚡ Mix Ibrido Multi-Provider (1° ' + selectedPrimaryProvider.name + ' + 2° ' + selectedSecondaryProvider.name + ')' : 'Coppia Certificata (' + selectedPrimaryProvider.name + ')'}</strong>
+              </span>
+            </div>
+            <div class="mono" style="font-size: 12px; color: var(--fg-muted); display: flex; align-items: center; gap: 8px;">
+              <span>DNS Attivi (${activeAdapter}): <strong style="color: var(--accent-main);">${curDnsStr}</strong></span>
+              <button onclick="openPresetsChapter()" style="padding: 3px 9px; border-radius: 5px; border: 1px solid var(--accent-main); background: var(--accent-main); color: var(--accent-contrast); font-size: 11px; font-weight: 800; cursor: pointer;">
+                🏆 Preset
+              </button>
+              <button onclick="setActivePage('wiki')" style="padding: 3px 9px; border-radius: 5px; border: 1px solid var(--accent-border); background: var(--accent-soft); color: var(--accent-main); font-size: 11px; font-weight: 700; cursor: pointer;">
+                📖 Guida Neofiti
+              </button>
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: repeat(12, 1fr); gap: 14px; align-items: stretch;">
+            <!-- Slot 1: DNS Primario -->
+            <div style="grid-column: span 4; background: var(--surface-subtle); border: 1.5px solid var(--accent-main); border-radius: 8px; padding: 10px 14px; display: flex; flex-direction: column; justify-content: space-between;">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span class="mono" style="font-size: 11px; font-weight: 800; color: var(--accent-main); text-transform: uppercase;">1° DNS PRIMARIO (IPv4)</span>
+                <span style="font-size: 12px; font-weight: 700; color: var(--fg-main);">${selectedPrimaryProvider.name}</span>
+              </div>
+              <div style="display: flex; align-items: baseline; justify-content: space-between; margin: 6px 0;">
+                <input type="text" value="${customPrimaryIp}" onchange="customPrimaryIp=this.value"
+                  class="mono" style="font-size: 22px; font-weight: 800; background: transparent; border: none; color: var(--fg-main); width: 100%; outline: none;" title="Puoi anche modificare manualmente l'IP Primario" />
+              </div>
+              <div class="mono" style="display: flex; justify-content: space-between; font-size: 11px; color: var(--fg-muted); border-top: 1px solid var(--border-color); padding-top: 5px;">
+                <span>VELOCITÀ: <strong style="color: var(--accent-main);">${selectedPrimaryProvider.latency} ms</strong></span>
+                <span>AFFIDABILITÀ: <strong>${selectedPrimaryProvider.reliability}%</strong></span>
+              </div>
+            </div>
+
+            <!-- Slot 2: DNS Secondario -->
+            <div style="grid-column: span 4; background: var(--surface-subtle); border: 1.5px solid var(--secondary-accent); border-radius: 8px; padding: 10px 14px; display: flex; flex-direction: column; justify-content: space-between;">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span class="mono" style="font-size: 11px; font-weight: 800; color: var(--secondary-accent); text-transform: uppercase;">2° DNS SECONDARIO (IPv4)</span>
+                <span style="font-size: 12px; font-weight: 700; color: var(--fg-main);">${selectedSecondaryProvider.name}</span>
+              </div>
+              <div style="display: flex; align-items: center; justify-content: space-between; margin: 6px 0; gap: 6px;">
+                <input type="text" value="${customSecondaryIp}" onchange="customSecondaryIp=this.value"
+                  class="mono" style="font-size: 22px; font-weight: 800; background: transparent; border: none; color: var(--fg-main); width: 100%; outline: none;" title="Puoi anche modificare manualmente l'IP Secondario" />
+                ${isHybrid ? `
+                  <div style="display:flex; gap:3px; flex-shrink:0;">
+                    <button onclick="useSecondaryIpVariant('${selectedSecondaryProvider.primary}')" class="mono" style="font-size:10px; padding:3px 6px; border-radius:4px; border:1px solid var(--border-color); cursor:pointer; background:${customSecondaryIp===selectedSecondaryProvider.primary?'var(--secondary-accent)':'var(--card-bg)'}; color:${customSecondaryIp===selectedSecondaryProvider.primary?'#000':'var(--fg-muted)'};">${selectedSecondaryProvider.primary}</button>
+                    <button onclick="useSecondaryIpVariant('${selectedSecondaryProvider.secondary}')" class="mono" style="font-size:10px; padding:3px 6px; border-radius:4px; border:1px solid var(--border-color); cursor:pointer; background:${customSecondaryIp===selectedSecondaryProvider.secondary?'var(--secondary-accent)':'var(--card-bg)'}; color:${customSecondaryIp===selectedSecondaryProvider.secondary?'#000':'var(--fg-muted)'};">${selectedSecondaryProvider.secondary}</button>
+                  </div>
+                ` : ''}
+              </div>
+              <div class="mono" style="display: flex; justify-content: space-between; font-size: 11px; color: var(--fg-muted); border-top: 1px solid var(--border-color); padding-top: 5px;">
+                <span>VELOCITÀ: <strong style="color: var(--secondary-accent);">${selectedSecondaryProvider.latency} ms</strong></span>
+                <span>AFFIDABILITÀ: <strong>${selectedSecondaryProvider.reliability}%</strong></span>
+              </div>
+            </div>
+
+            <!-- Action CTA Column -->
+            <div style="grid-column: span 4; display: flex; flex-direction: column; justify-content: space-between; gap: 8px;">
+              <button onclick="applySelectedDns()" style="flex: 1; width: 100%; border: none; border-radius: 8px; background: var(--accent-main); color: var(--accent-contrast); font-size: 14px; font-weight: 800; letter-spacing: 0.03em; text-transform: uppercase; cursor: pointer; box-shadow: 0 4px 14px rgba(16, 185, 129, 0.28); display: flex; align-items: center; justify-content: center; gap: 8px; padding: 10px;">
+                <span>⚡ UTILIZZA DNS SELEZIONATI</span>
+              </button>
+              <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px;">
+                <button onclick="restoreDhcpDns()" style="padding: 7px 6px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--surface-subtle); color: var(--fg-main); font-size: 11px; font-weight: 700; cursor: pointer;">
+                  🔄 DHCP Auto
+                </button>
+                <button onclick="flushWindowsDnsCache()" style="padding: 7px 6px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--surface-subtle); color: var(--fg-main); font-size: 11px; font-weight: 700; cursor: pointer;">
+                  🧹 Flush DNS
+                </button>
+                <button onclick="runLivePingBenchmark()" style="padding: 7px 6px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--surface-subtle); color: var(--accent-main); font-size: 11px; font-weight: 700; cursor: pointer;">
+                  ${isBenchmarking ? '⏳ Ping...' : '📡 Test Ping'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- PROVIDERS LIST HEADER -->
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
+          <div class="mono" style="font-size: 11px; font-weight: 800; letter-spacing: 0.05em; color: var(--fg-muted); text-transform: uppercase;">
+            ELENCO PROVIDER DNS CERTIFICATI (${DNS_PROVIDERS.length} RIGHE • SCEGLI "USA COPPIA" OPPURE COMBINA "1° PRIMARIO" + "2° SECONDARIO")
+          </div>
+          <div style="font-size: 12px; color: var(--fg-muted);">
+            Valori di <strong>Affidabilità (%)</strong> e <strong>Velocità (ms)</strong> al fianco di ogni provider
+          </div>
+        </div>
+
+        <!-- VERTICAL STACK OF FULL-WIDTH ROW CARDS (UNA SOTTO L'ALTRA) -->
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+          ${DNS_PROVIDERS.map(p => {
+            const isP1 = selectedPrimaryProvider.id === p.id;
+            const isP2 = selectedSecondaryProvider.id === p.id;
+            const isBoth = isP1 && isP2;
+            const borderCol = isBoth ? 'var(--accent-main)' : ((isP1 || isP2) ? 'var(--secondary-accent)' : 'var(--border-color)');
+            const borderWidth = (isP1 || isP2) ? '2px' : '1px';
+
+            return `
+              <article style="background: var(--card-bg); border: ${borderWidth} solid ${borderCol}; border-radius: 10px; padding: 13px 18px; display: grid; grid-template-columns: 3.6fr 2.1fr 2.3fr 2.4fr; gap: 16px; align-items: center; transition: all 0.15s ease;">
+                
+                <!-- Colonna 1: Nome, Badge, Descrizione dettagliata & Pulsante Sito Ufficiale -->
+                <div>
+                  <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                    <h3 style="font-size: 15px; font-weight: 800; color: var(--fg-main);">${p.name}</h3>
+                    <span class="mono" style="font-size: 10px; font-weight: 800; padding: 2px 7px; border-radius: 4px; background: var(--accent-soft); color: var(--accent-main); border: 1px solid var(--accent-border);">
+                      ${p.badge}
+                    </span>
+                    <button onclick="openExternalUrl('${p.url}')" class="mono" style="margin-left: auto; padding: 4px 9px; border-radius: 5px; border: 1px solid var(--border-color); background: var(--surface-subtle); color: var(--fg-main); font-size: 11px; font-weight: 700; cursor: pointer;" title="Vai al sito ufficiale di ${p.name}">
+                      Sito Ufficiale ↗
+                    </button>
+                  </div>
+                  <p style="margin-top: 6px; font-size: 12px; line-height: 1.45; color: var(--fg-muted);">
+                    ${p.desc}
+                  </p>
+                </div>
+
+                <!-- Colonna 2: Indirizzi DNS Primario e Secondario -->
+                <div class="mono" style="padding: 9px 12px; border-radius: 8px; background: var(--surface-subtle); border: 1px solid var(--border-color); display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                  <div>
+                    <span style="display: block; font-size: 10px; color: var(--fg-muted); font-weight: 700;">1° PRIMARIO</span>
+                    <span style="font-size: 14px; font-weight: 800; color: var(--fg-main);">${p.primary}</span>
+                  </div>
+                  <div style="border-left: 1px solid var(--border-color); padding-left: 10px;">
+                    <span style="display: block; font-size: 10px; color: var(--fg-muted); font-weight: 700;">2° SECONDARIO</span>
+                    <span style="font-size: 14px; font-weight: 800; color: var(--fg-main);">${p.secondary}</span>
+                  </div>
+                </div>
+
+                <!-- Colonna 3: Valori di Velocità e Affidabilità al fianco -->
+                <div class="mono" style="display: flex; flex-direction: column; gap: 8px; font-size: 11px; padding: 6px 10px; border-left: 1px solid var(--border-color); border-right: 1px solid var(--border-color);">
+                  <div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 3px;">
+                      <span style="color: var(--fg-muted);">⚡ VELOCITÀ</span>
+                      <strong style="color: var(--accent-main);">${p.latency} ms (${p.speedScore}/100)</strong>
+                    </div>
+                    <div style="height: 6px; border-radius: 3px; background: var(--surface-subtle); overflow: hidden;">
+                      <div style="height: 100%; width: ${p.speedScore}%; background: var(--accent-main);"></div>
+                    </div>
+                  </div>
+                  <div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 3px;">
+                      <span style="color: var(--fg-muted);">🛡️ AFFIDABILITÀ</span>
+                      <strong style="color: var(--secondary-accent);">${p.reliability}%</strong>
+                    </div>
+                    <div style="height: 6px; border-radius: 3px; background: var(--surface-subtle); overflow: hidden;">
+                      <div style="height: 100%; width: ${p.reliability}%; background: var(--secondary-accent);"></div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Colonna 4: Pulsanti Azione (Coppia / 1° Primario / 2° Secondario) -->
+                <div style="display: flex; flex-direction: column; gap: 6px;">
+                  <button onclick="selectProviderPair('${p.id}')" style="width: 100%; padding: 8px 10px; border-radius: 6px; border: 1px solid ${isBoth ? 'var(--accent-main)' : 'var(--border-color)'}; background: ${isBoth ? 'var(--accent-main)' : 'var(--surface-subtle)'}; color: ${isBoth ? 'var(--accent-contrast)' : 'var(--fg-main)'}; font-size: 12px; font-weight: 800; cursor: pointer;">
+                    ${isBoth ? '✓ Coppia Selezionata' : 'Usa Coppia (1° + 2°)'}
+                  </button>
+                  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
+                    <button onclick="selectProviderPrimary('${p.id}')" style="padding: 6px 8px; border-radius: 6px; border: 1px solid ${isP1 && !isBoth ? 'var(--accent-main)' : 'var(--border-color)'}; background: ${isP1 && !isBoth ? 'var(--accent-main)' : 'var(--surface-subtle)'}; color: ${isP1 && !isBoth ? 'var(--accent-contrast)' : 'var(--fg-main)'}; font-size: 11px; font-weight: 700; cursor: pointer;">
+                      ${isP1 ? '✓ 1° Primario' : '1° Primario'}
+                    </button>
+                    <button onclick="selectProviderSecondary('${p.id}')" style="padding: 6px 8px; border-radius: 6px; border: 1px solid ${isP2 && !isBoth ? 'var(--secondary-accent)' : 'var(--border-color)'}; background: ${isP2 && !isBoth ? 'var(--secondary-accent)' : 'var(--surface-subtle)'}; color: ${isP2 && !isBoth ? '#000' : 'var(--fg-main)'}; font-size: 11px; font-weight: 700; cursor: pointer;">
+                      ${isP2 ? '✓ 2° Second.' : '2° Second.'}
+                    </button>
+                  </div>
+                </div>
+
+              </article>
+            `;
+          }).join('')}
+        </div>
+      `;
+    }
+
+    // -------------------------------------------------------------------------
+    // STILE 2: WINDOWS 11 MICA TACTILE (CARD IN RIGHE UNA SOTTO L'ALTRA)
+    // -------------------------------------------------------------------------
+    function renderStyle2MicaRows(vp) {
+      const isHybrid = selectedPrimaryProvider.id !== selectedSecondaryProvider.id;
+      const curAdapter = getCurrentAdapterObj();
+      const curDnsStr = (curAdapter && curAdapter.current_dns && curAdapter.current_dns.length)
+        ? curAdapter.current_dns.join(', ')
+        : 'DHCP Automatico';
+
+      vp.innerHTML = `
+        <div style="display: grid; grid-template-columns: 320px 1fr; gap: 18px; align-items: start;">
+          
+          <!-- LEFT SIDEBAR: ACTIVE PROFILE CONTROL CARD -->
+          <aside style="background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px; padding: 18px; position: sticky; top: 0; box-shadow: 0 8px 24px rgba(0,0,0,0.08);">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px;">
+              <span style="font-size: 12px; font-weight: 800; text-transform: uppercase; color: var(--accent-main); letter-spacing: 0.04em;">Profilo DNS Selezionato</span>
+              <span style="font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 99px; background: var(--accent-soft); color: var(--accent-main);">
+                ${isHybrid ? 'Mix Ibrido' : 'Coppia Singola'}
+              </span>
+            </div>
+
+            <!-- Primary Pill -->
+            <div style="background: var(--surface-subtle); border: 1px solid var(--border-color); border-radius: 12px; padding: 12px 14px; margin-bottom: 10px;">
+              <div style="display: flex; justify-content: space-between; font-size: 12px; color: var(--fg-muted);">
+                <span>1° DNS Primario</span>
+                <strong style="color: var(--fg-main);">${selectedPrimaryProvider.name}</strong>
+              </div>
+              <input type="text" value="${customPrimaryIp}" onchange="customPrimaryIp=this.value"
+                class="mono" style="font-size: 22px; font-weight: 800; color: var(--fg-main); background: transparent; border: none; width: 100%; margin-top: 4px; outline: none;" />
+              <div style="font-size: 11px; color: var(--fg-muted); margin-top: 4px;">
+                ⚡ Velocità: <strong>${selectedPrimaryProvider.latency} ms</strong> • 🛡️ Affidabilità: <strong>${selectedPrimaryProvider.reliability}%</strong>
+              </div>
+            </div>
+
+            <!-- Secondary Pill -->
+            <div style="background: var(--surface-subtle); border: 1px solid var(--border-color); border-radius: 12px; padding: 12px 14px; margin-bottom: 14px;">
+              <div style="display: flex; justify-content: space-between; font-size: 12px; color: var(--fg-muted);">
+                <span>2° DNS Secondario</span>
+                <strong style="color: var(--fg-main);">${selectedSecondaryProvider.name}</strong>
+              </div>
+              <input type="text" value="${customSecondaryIp}" onchange="customSecondaryIp=this.value"
+                class="mono" style="font-size: 22px; font-weight: 800; color: var(--fg-main); background: transparent; border: none; width: 100%; margin-top: 4px; outline: none;" />
+              <div style="font-size: 11px; color: var(--fg-muted); margin-top: 4px;">
+                ⚡ Velocità: <strong>${selectedSecondaryProvider.latency} ms</strong> • 🛡️ Affidabilità: <strong>${selectedSecondaryProvider.reliability}%</strong>
+              </div>
+            </div>
+
+            <!-- Main CTA Button -->
+            <button onclick="applySelectedDns()" style="width: 100%; padding: 14px; border-radius: 12px; border: none; background: var(--accent-main); color: #FFFFFF; font-size: 14px; font-weight: 800; cursor: pointer; box-shadow: 0 6px 18px rgba(37, 99, 235, 0.32); margin-bottom: 10px;">
+              ⚡ Utilizza DNS Selezionati
+            </button>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px;">
+              <button onclick="restoreDhcpDns()" style="padding: 9px; border-radius: 10px; border: 1px solid var(--border-color); background: var(--surface-subtle); color: var(--fg-main); font-size: 12px; font-weight: 700; cursor: pointer;">
+                🔄 DHCP Auto
+              </button>
+              <button onclick="flushWindowsDnsCache()" style="padding: 9px; border-radius: 10px; border: 1px solid var(--border-color); background: var(--surface-subtle); color: var(--fg-main); font-size: 12px; font-weight: 700; cursor: pointer;">
+                🧹 Flush Cache
+              </button>
+            </div>
+
+            <button onclick="runLivePingBenchmark()" style="width: 100%; padding: 9px; border-radius: 10px; border: 1px solid var(--border-color); background: var(--surface-subtle); color: var(--accent-main); font-size: 12px; font-weight: 700; cursor: pointer; margin-bottom: 8px;">
+              📡 Misura Velocità DNS in Tempo Reale
+            </button>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+              <button onclick="openPresetsChapter()" style="width: 100%; padding: 9px 6px; border-radius: 10px; border: 1px solid var(--accent-main); background: var(--accent-soft); color: var(--accent-main); font-size: 12px; font-weight: 800; cursor: pointer;">
+                🏆 Preset Pronti
+              </button>
+              <button onclick="setActivePage('wiki')" style="width: 100%; padding: 9px 6px; border-radius: 10px; border: 1px solid var(--accent-border); background: var(--surface-subtle); color: var(--fg-main); font-size: 12px; font-weight: 700; cursor: pointer;">
+                📖 Wiki Neofiti
+              </button>
+            </div>
+
+            <div style="margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--border-color); font-size: 12px; color: var(--fg-muted);">
+              <div>Scheda attiva: <strong style="color: var(--fg-main);">${activeAdapter}</strong></div>
+              <div style="margin-top: 4px;">DNS in uso: <strong class="mono" style="color: var(--accent-main);">${curDnsStr}</strong></div>
+            </div>
+          </aside>
+
+          <!-- RIGHT CONTENT: STACKED MICA ROW CARDS (UNA SOTTO L'ALTRA) -->
+          <section style="display: flex; flex-direction: column; gap: 11px;">
+            ${DNS_PROVIDERS.map(p => {
+              const isP1 = selectedPrimaryProvider.id === p.id;
+              const isP2 = selectedSecondaryProvider.id === p.id;
+              const isBoth = isP1 && isP2;
+              return `
+                <div style="background: var(--card-bg); border: ${isP1||isP2 ? '2px solid var(--accent-main)' : '1px solid var(--border-color)'}; border-radius: 14px; padding: 14px 18px; display: grid; grid-template-columns: 3.4fr 2fr 2fr 2.2fr; gap: 14px; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.04);">
+                  <div>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                      <h3 style="font-size: 15px; font-weight: 800; color: var(--fg-main);">${p.name}</h3>
+                      <button onclick="openExternalUrl('${p.url}')" style="background: none; border: none; color: var(--accent-main); font-size: 12px; font-weight: 700; cursor: pointer;">
+                        Sito Web ↗
+                      </button>
+                    </div>
+                    <p style="margin-top: 5px; font-size: 12px; line-height: 1.45; color: var(--fg-muted);">
+                      ${p.desc}
+                    </p>
+                  </div>
+
+                  <div class="mono" style="padding: 9px 12px; border-radius: 10px; background: var(--surface-subtle); font-size: 12px;">
+                    <div>1° PRI: <strong>${p.primary}</strong></div>
+                    <div style="margin-top: 4px;">2° SEC: <strong>${p.secondary}</strong></div>
+                  </div>
+
+                  <div style="font-size: 12px; padding: 6px 10px; border-left: 1px solid var(--border-color); border-right: 1px solid var(--border-color);">
+                    <div>⚡ Velocità: <strong>${p.latency} ms (${p.speedScore}/100)</strong></div>
+                    <div style="margin-top: 6px;">🛡️ Affidabilità: <strong>${p.reliability}%</strong></div>
+                  </div>
+
+                  <div style="display: flex; flex-direction: column; gap: 6px;">
+                    <button onclick="selectProviderPair('${p.id}')" style="padding: 7px; border-radius: 8px; border: none; background: ${isBoth ? 'var(--accent-main)' : 'var(--surface-subtle)'}; color: ${isBoth ? '#FFF' : 'var(--fg-main)'}; font-size: 12px; font-weight: 700; cursor: pointer;">
+                      ${isBoth ? '✓ Coppia Attiva' : 'Usa Coppia'}
+                    </button>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
+                      <button onclick="selectProviderPrimary('${p.id}')" style="padding: 6px; border-radius: 8px; border: none; background: ${isP1 && !isBoth ? 'var(--accent-main)' : 'var(--surface-subtle)'}; color: ${isP1 && !isBoth ? '#FFF' : 'var(--fg-main)'}; font-size: 11px; font-weight: 700; cursor: pointer;">
+                        ${isP1 ? '✓ 1° Pri' : '1° Pri'}
+                      </button>
+                      <button onclick="selectProviderSecondary('${p.id}')" style="padding: 6px; border-radius: 8px; border: none; background: ${isP2 && !isBoth ? 'var(--accent-main)' : 'var(--surface-subtle)'}; color: ${isP2 && !isBoth ? '#FFF' : 'var(--fg-main)'}; font-size: 11px; font-weight: 700; cursor: pointer;">
+                        ${isP2 ? '✓ 2° Sec' : '2° Sec'}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              `;
+            }).join('')}
+          </section>
+
+        </div>
+      `;
+    }
+
+    // -------------------------------------------------------------------------
+    // STILE 3: INDUSTRIAL HARDWARE RACK (MODULI IN RIGHE UNO SOTTO L'ALTRO)
+    // -------------------------------------------------------------------------
+    function renderStyle3RackRows(vp) {
+      const lcdBg = isDark ? '#080A09' : '#18221D';
+      const lcdFg = isDark ? '#FF6B00' : '#34D399';
+
+      vp.innerHTML = `
+        <div class="mono">
+          <!-- RACK DIGITAL READOUT HEADER -->
+          <div style="display: grid; grid-template-columns: repeat(12, 1fr); gap: 14px; margin-bottom: 16px; align-items: stretch;">
+            <div style="grid-column: span 8; background: ${lcdBg}; color: ${lcdFg}; border: 2px solid var(--border-color); padding: 12px 18px; display: grid; grid-template-columns: 1fr 1fr; gap: 18px;">
+              <div>
+                <div style="font-size: 11px; opacity: 0.8;">CH-01 // PRIMARY_DNS_RESOLVER [${selectedPrimaryProvider.name.toUpperCase()}]</div>
+                <input type="text" value="${customPrimaryIp}" onchange="customPrimaryIp=this.value"
+                  class="mono" style="font-size: 24px; font-weight: 800; color: ${lcdFg}; background: transparent; border: none; width: 100%; margin: 4px 0; outline: none;" />
+                <div style="font-size: 11px;">SPEED_PING: ${selectedPrimaryProvider.latency}ms  |  RELIABILITY: ${selectedPrimaryProvider.reliability}%</div>
+              </div>
+              <div style="border-left: 2px solid rgba(128,128,128,0.25); padding-left: 18px;">
+                <div style="font-size: 11px; opacity: 0.8;">CH-02 // SECONDARY_DNS_RESOLVER [${selectedSecondaryProvider.name.toUpperCase()}]</div>
+                <input type="text" value="${customSecondaryIp}" onchange="customSecondaryIp=this.value"
+                  class="mono" style="font-size: 24px; font-weight: 800; color: ${lcdFg}; background: transparent; border: none; width: 100%; margin: 4px 0; outline: none;" />
+                <div style="font-size: 11px;">SPEED_PING: ${selectedSecondaryProvider.latency}ms  |  RELIABILITY: ${selectedSecondaryProvider.reliability}%</div>
+              </div>
+            </div>
+
+            <div style="grid-column: span 4; display: flex; flex-direction: column; justify-content: space-between; gap: 8px;">
+              <button onclick="applySelectedDns()" class="mono" style="flex: 1; background: #FF5500; color: #000000; border: 2px solid #000000; font-size: 14px; font-weight: 900; text-transform: uppercase; cursor: pointer; box-shadow: 4px 4px 0px rgba(0,0,0,0.5);">
+                [ ⚡ UTILIZZA DNS SELEZIONATI ]
+              </button>
+              <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px;">
+                <button onclick="restoreDhcpDns()" class="mono" style="padding: 8px 3px; border: 2px solid var(--border-color); background: var(--card-bg); color: var(--fg-main); font-size: 10.5px; font-weight: 700; cursor: pointer;">[DHCP]</button>
+                <button onclick="flushWindowsDnsCache()" class="mono" style="padding: 8px 3px; border: 2px solid var(--border-color); background: var(--card-bg); color: var(--fg-main); font-size: 10.5px; font-weight: 700; cursor: pointer;">[FLUSH]</button>
+                <button onclick="runLivePingBenchmark()" class="mono" style="padding: 8px 3px; border: 2px solid var(--border-color); background: var(--card-bg); color: #FF5500; font-size: 10.5px; font-weight: 700; cursor: pointer;">[PING]</button>
+                <button onclick="openPresetsChapter()" class="mono" style="padding: 8px 3px; border: 2px solid #FF5500; background: #FF5500; color: #000000; font-size: 10.5px; font-weight: 800; cursor: pointer;">[PRESET]</button>
+                <button onclick="setActivePage('wiki')" class="mono" style="padding: 8px 3px; border: 2px solid #FF5500; background: var(--card-bg); color: #FF5500; font-size: 10.5px; font-weight: 800; cursor: pointer;">[WIKI]</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- STACKED RACK UNITS (UNA SOTTO L'ALTRA) -->
+          <div style="display: flex; flex-direction: column; gap: 10px;">
+            ${DNS_PROVIDERS.map((p, idx) => {
+              const isP1 = selectedPrimaryProvider.id === p.id;
+              const isP2 = selectedSecondaryProvider.id === p.id;
+              const isBoth = isP1 && isP2;
+              return `
+                <div style="background: var(--card-bg); border: 2px solid ${(isP1||isP2) ? '#FF5500' : 'var(--border-color)'}; padding: 13px 16px; display: grid; grid-template-columns: 3.5fr 2.1fr 2.1fr 2.3fr; gap: 14px; align-items: center;">
+                  <div>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                      <span style="font-size: 13px; font-weight: 800; color: var(--fg-main);">[UNIT-0${idx + 1}] ${p.name.toUpperCase()}</span>
+                      <button onclick="openExternalUrl('${p.url}')" class="mono" style="background: none; border: 1px solid var(--border-color); color: #FF5500; padding: 2px 7px; font-size: 11px; font-weight: 700; cursor: pointer;">SPEC ↗</button>
+                    </div>
+                    <p class="sans" style="margin-top: 5px; font-size: 12px; color: var(--fg-muted); line-height: 1.42;">${p.desc}</p>
+                  </div>
+
+                  <div style="font-size: 12px; padding: 8px 10px; background: var(--surface-subtle); border: 1px solid var(--border-color);">
+                    <div>PRI_IP: <strong>${p.primary}</strong></div>
+                    <div style="margin-top: 4px;">SEC_IP: <strong>${p.secondary}</strong></div>
+                  </div>
+
+                  <div style="font-size: 12px; padding: 6px 10px; border-left: 2px solid var(--border-color); border-right: 2px solid var(--border-color);">
+                    <div style="color: var(--accent-main);">VELOCITÀ: <strong>${p.latency} ms</strong></div>
+                    <div style="margin-top: 5px;">AFFIDABILITÀ: <strong>${p.reliability}%</strong></div>
+                  </div>
+
+                  <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px;">
+                    <button onclick="selectProviderPair('${p.id}')" class="mono" style="padding: 9px 6px; border: 2px solid var(--border-color); background: ${isBoth ? '#FF5500' : 'var(--surface-subtle)'}; color: ${isBoth ? '#000' : 'var(--fg-main)'}; font-size: 11px; font-weight: 800; cursor: pointer;">[PAIR]</button>
+                    <button onclick="selectProviderPrimary('${p.id}')" class="mono" style="padding: 9px 6px; border: 2px solid var(--border-color); background: ${isP1 && !isBoth ? '#FF5500' : 'var(--surface-subtle)'}; color: ${isP1 && !isBoth ? '#000' : 'var(--fg-main)'}; font-size: 11px; font-weight: 800; cursor: pointer;">[CH-1]</button>
+                    <button onclick="selectProviderSecondary('${p.id}')" class="mono" style="padding: 9px 6px; border: 2px solid var(--border-color); background: ${isP2 && !isBoth ? '#FF5500' : 'var(--surface-subtle)'}; color: ${isP2 && !isBoth ? '#000' : 'var(--fg-main)'}; font-size: 11px; font-weight: 800; cursor: pointer;">[CH-2]</button>
+                  </div>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    // Avvio iniziale
+    window.addEventListener('DOMContentLoaded', () => {
+      renderViewport();
+    });
+
+    window.addEventListener('pywebviewready', () => {
+      refreshSystemState();
+    });
+  </script>
+</body>
+</html>

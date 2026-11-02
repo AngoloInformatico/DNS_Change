@@ -1,0 +1,12 @@
+{
+  "app_name": "DNS Change",
+  "version": "0.1.7",
+  "source_hash": "320c4a26513f8e5037ac5be0a39b477622902318b26c53ecf7e175f1a44397c5",
+  "watched_files": [
+    "main.py",
+    "web/index.html",
+    "GeneraExe.py"
+  ],
+  "author": "Alex Lignola",
+  "copyright": "Created by Alex Lignola - © 2026 DNS Change - All rights reserved."
+}

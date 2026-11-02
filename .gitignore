@@ -1,0 +1,17 @@
+# File di lavoro e build temporanei
+Codex_Work/
+__pycache__/
+*.py[cod]
+*$py.class
+*.spec
+build/
+.env
+.venv/
+venv/
+.vscode/
+.idea/
+
+# Windows system files
+desktop.ini
+Thumbs.db
+
