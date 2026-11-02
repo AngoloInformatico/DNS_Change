@@ -37,42 +37,46 @@ Progettata con un'interfaccia professionale multi-stile (**Windows 11 Mica Tacti
 
 ---
 
-## Caratteristiche Principali
+## ⚡ Caratteristiche Principali
 
-- **Selezione Flessibile (Coppia o Mix Ibrido):**
-  - **Usa Coppia:** Applica contemporaneamente il DNS Primario e Secondario dello stesso provider.
-  - **1° Primario + 2° Secondario Indipendenti:** Scegli il DNS Primario da un provider (es. *Cloudflare `1.1.1.1`*) e il DNS Secondario da un altro provider (es. *Quad9 `149.112.112.112`* o *Google `8.8.8.8`*).
-- **Catalogo Completo dei Provider DNS più Conosciuti:**
-  Include descrizioni tecniche dettagliate, indirizzi IPv4 Primario/Secondario, barre telemetriche di **Velocità (ms)** e **Affidabilità (%)**, e pulsante diretto al **Sito Ufficiale** per ogni provider:
-  1. **Cloudflare DNS** (`1.1.1.1` / `1.0.0.1`) — *Velocità estrema & Privacy*
-  2. **Google Public DNS** (`8.8.8.8` / `8.8.4.4`) — *Massima compatibilità globale*
-  3. **Quad9 Security DNS** (`9.9.9.9` / `149.112.112.112`) — *Scudo Anti-Malware & Phishing Svizzero*
-  4. **Cisco OpenDNS Home** (`208.67.222.222` / `208.67.220.220`) — *Protezione Anti-Phishing Enterprise*
-  5. **AdGuard DNS Public** (`94.140.14.14` / `94.140.15.15`) — *Ad-Block & Anti-Tracking nativo*
-  6. **CleanBrowsing Security** (`185.228.168.9` / `185.228.169.9`) — *Filtro Malware & Family Shield*
-  7. **NextDNS Public Anycast** (`45.90.28.190` / `45.90.30.190`) — *Firewall DNS Ultra-Veloce*
-  8. **Control D Unfiltered** (`76.76.2.0` / `76.76.10.0`) — *Routing Anycast di nuova generazione*
-  9. **Verisign Public DNS** (`64.6.64.6` / `64.6.65.6`) — *Stabilità Root Server pura*
-- **Layout a Card in Righe Verticali:** Le card dei provider sono impilate in righe a tutta larghezza una sotto l'altra, per una consultazione chiara e immediata con valori di latenza e affidabilità al fianco di ciascun resolver.
-- **3 Varianti di Stile Grafico + Temi Dark e Light:**
-  - `2. Win11 Mica (Predefinito)`: Barra laterale del profilo attivo e card morbide in stile Windows 11 (avvio predefinito in modalità Mica Light).
-  - `1. Swiss Telemetry`: Griglia tecnica da `1px`, contrasto tipografico netto e indicatori telemetrici.
-  - `3. Hardware Rack`: Display digitale centrale a doppio canale (`CH-01` / `CH-02`) e pulsanti meccanici.
-- **📖 Wiki & Guida Interattiva per Neofiti Integrata:** Include un manuale pratico suddiviso in capitoli accessibile dalla barra superiore:
-  - *1. Cos'è il DNS (spiegato semplice con la metafora della rubrica telefonica)*
-  - *2. Come usare DNS Change in 4 semplici passi*
-  - *3. Differenza tra DNS Primario e Secondario e perché fare il Mix Ibrido*
-  - *4. Quale DNS scegliere per le proprie esigenze (con preset rapidi)*
-  - *5. Glossario pratico (DHCP, Flush DNS, Ping e Uptime)*
-- **🏆 Pulsante Preset 1-Click:** Pulsante dedicato nella barra superiore della dashboard che porta direttamente al Capitolo 4 della Wiki per caricare configurazioni ottimali in un clic (*Gaming & Fibra*, *Protezione Malware Famiglia*, *Ad-Block*, *Mix Privacy + Sicurezza*).
-- **🔄 Auto-Incremento Versione (`version.json`):** Tracciamento automatico basato su hash SHA-256 dei file sorgente, per garantire un versionamento trasparente e autonomo a chiunque cloni la repository da GitHub.
-- **Strumenti di Rete Windows 10/11 Integrati:**
-  - Pulsante **⚡ Utilizza DNS Selezionati** con elevazione automatica UAC di Windows.
-  - Pulsante **🔄 DHCP Auto** per ripristinare i DNS automatici dell'operatore.
-  - Pulsante **🧹 Flush DNS** per svuotare istantaneamente la cache DNS (`ipconfig /flushdns`).
-  - Pulsante **📡 Test Ping** per misurare in tempo reale la latenza effettiva verso tutti i server DNS.
-- **Centraggio Automatico sullo Schermo:** All'avvio la finestra si posiziona sempre esattamente al centro del monitor principale di Windows.
-- **Integrazione Icona Completa:** L'icona `Icona/icon.ico` è associata al file `.exe`, alla finestra nativa e alla barra delle applicazioni (Taskbar) anche quando l'applicazione è minimizzata.
+### 🔀 Selezione Flessibile & Routing Ibrido
+- **Usa Coppia:** Applica contemporaneamente il DNS Primario e Secondario dello stesso provider.
+- **Mix Ibrido Indipendente:** Abbina il **DNS Primario** di un provider (es. *Cloudflare `1.1.1.1`*) con il **DNS Secondario** di un altro (es. *Quad9 `149.112.112.112`* o *Google `8.8.8.8`*) per massimizzare velocità e ridondanza.
+
+### 🌐 Catalogo Resolver DNS Integrati
+I 9 provider DNS pubblici più affidabili e veloci al mondo, con telemetria live (**Velocità / Ping** e **Affidabilità %**) e collegamenti diretti alla documentazione ufficiale:
+
+| Provider | DNS Primario (IPv4) | DNS Secondario (IPv4) | Profilo & Specializzazione |
+| :--- | :---: | :---: | :--- |
+| **Cloudflare DNS** | `1.1.1.1` | `1.0.0.1` | ⚡ *Velocità estrema Anycast & Privacy zero-log* |
+| **Google Public DNS** | `8.8.8.8` | `8.8.4.4` | 🌍 *Infrastruttura globale & Validazione DNSSEC rigorosa* |
+| **Quad9 Security DNS** | `9.9.9.9` | `149.112.112.112` | 🛡️ *Scudo Anti-Malware, Ransomware & Phishing Svizzero* |
+| **Cisco OpenDNS Home** | `208.67.222.222` | `208.67.220.220` | 🏢 *Filtro contenuti & Protezione anti-phishing enterprise* |
+| **AdGuard DNS Public** | `94.140.14.14` | `94.140.15.15` | 🚫 *Ad-Block nativo a livello di rete & Blocco traccianti* |
+| **CleanBrowsing Security** | `185.228.168.9` | `185.228.169.9` | 👨‍👩‍👧 *Filtro Malware & Protezione per tutta la famiglia* |
+| **NextDNS Public Anycast** | `45.90.28.190` | `45.90.30.190` | 🧱 *Firewall DNS moderno con routing reattivo* |
+| **Control D Unfiltered** | `76.76.2.0` | `76.76.10.0` | 🚀 *Tecnologia Anycast proprietaria ad altissima efficienza* |
+| **Verisign Public DNS** | `64.6.64.6` | `64.6.65.6` | 🏛️ *Stabilità Root Server pura & Zero redirect pubblicitario* |
+
+### 🎨 Design & Esperienza Visiva Curata
+- **Layout a Card in Righe Verticali:** Interfaccia ripensata per una lettura immediata; ogni riga mostra chiaramente descrizione, indirizzi IP, indicatori grafici di latenza e pulsanti d'azione rapidi.
+- **3 Stili Grafici Selezionabili:**
+  - 🪟 **2. Win11 Mica (Predefinito):** Sidebar del profilo attivo e card con angoli smussati in stile nativo Windows 11 (avvio predefinito in modalità **Mica Light**).
+  - 📐 **1. Swiss Telemetry:** Griglia tecnica da `1px`, contrasto tipografico netto e indicatori telemetrici ad alta precisione.
+  - 🎛️ **3. Hardware Rack:** Display digitale centrale a doppio canale (`CH-01` / `CH-02`) e pulsanti meccanici ad alto contrasto.
+- **Temi Dark & Light:** Commutazione istantanea per lavorare comodamente in qualsiasi condizione di luce.
+- **Centraggio Automatico:** All'avvio la finestra si posiziona sempre al centro del monitor principale (con supporto per schermi ad alto DPI).
+- **Integrazione Icona Completa:** `Icona/icon.ico` nativa sull'eseguibile `.exe`, sulla barra del titolo e sulla barra delle applicazioni di Windows (anche con finestra minimizzata).
+
+### 📖 Guida per Neofiti & Strumenti Rapidi
+- **Wiki Interattiva Integrata:** Manuale completo accessibile in un clic (*Cos'è il DNS spiegato semplice*, *Guida in 4 passi*, *Perché fare il mix ibrido*, *Glossario pratico*).
+- **🏆 Preset Pronti 1-Click:** Pulsante dedicato nella barra superiore per applicare configurazioni raccomandate (*Gaming & Fibra*, *Protezione Famiglia*, *Ad-Block*, *Mix Privacy + Sicurezza*).
+- **Strumenti Windows One-Click:**
+  - ⚡ **Utilizza DNS Selezionati:** Applicazione immediata con richiesta di elevazione UAC automatica.
+  - 🔄 **DHCP Auto:** Ripristino istantaneo dei DNS automatici dell'operatore.
+  - 🧹 **Flush DNS:** Pulizia istantanea della cache locale (`ipconfig /flushdns`).
+  - 📡 **Test Ping:** Misurazione parallela della latenza TCP effettiva verso tutti i resolver.
+- **🔄 Auto-Incremento Versione (`version.json`):** Tracciamento automatico della versione basato su hash SHA-256 dei file sorgente, per una gestione trasparente sia in locale che su GitHub.
 
 ---
 
